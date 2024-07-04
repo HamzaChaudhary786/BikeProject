@@ -1,0 +1,119 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@font-face {
+  font-family: 'Racama';
+  src:
+    local('Racama'),
+    url('/font/racama.otf') format('opentype');
+}
+
+@import './variables/Variables';
+@import './mixins/Flex.scss';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: $FONT;
+  scroll-padding-top: 60px;
+}
+
+body {
+  background: var(--background-color-main);
+}
+
+h1,
+h2,
+h3,
+h4,
+input {
+  font-family: $FONT_SECONDARY;
+}
+h5,
+p,
+button,
+li,
+span {
+  font-family: $FONT;
+  box-shadow: none !important;
+}
+
+button {
+  font-weight: 600;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text-color-secondary);
+}
+
+p,
+span,
+li,
+ul,
+ol,
+h5 {
+  color: var(--text-color-main);
+}
+
+ul,
+li,
+ol {
+  list-style: none;
+}
+
+.remove-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+::-webkit-scrollbar {
+  width: 3px;
+  height: 3px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: var(--background-color-main);
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  transition: all 0.5s;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+::-webkit-scrollbar-button {
+  height: 0.5px;
+  background: var(--primary-color);
+}
+
+tr.roundedRow {
+  &:first-child {
+    border-radius: 10px;
+    background-color: $HOVER_GREYISH;
+  }
+  &:last-child {
+    border-radius: 10px;
+    background-color: $HOVER_GREYISH;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

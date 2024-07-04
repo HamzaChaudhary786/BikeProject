@@ -1,0 +1,29 @@
+:root {
+  --primary-color: rgba(159, 232, 112, 1);
+  --secondary-color: rgba(22, 51, 0, 1);
+  --background-color-main: rgba(255, 255, 255, 1);
+  --background-color-secondary: rgba(250, 250, 250, 255);
+  --text-color-main: rgba(86, 86, 86, 1);
+  --text-color-secondary: rgba(32, 32, 32, 1);
+  --text-color-labels: rgba(170, 178, 170, 1);
+}
+
+[data-theme='dark'] {
+  --primary-color: rgba(159, 232, 112, 1);
+  --secondary-color: rgba(22, 51, 0, 1);
+  --background-color-main: rgba(32, 32, 32, 1);
+  --background-color-secondary: rgba(43, 43, 43, 1);
+  --text-color-main: rgba(213, 217, 213, 1);
+  --text-color-secondary: rgba(250, 250, 250, 1);
+  --text-color-labels: rgba(170, 178, 170, 1);
+}
+
+$ERROR_COLOR: rgba(197, 0, 0, 1);
+$SUCCESS_COLOR: rgba(0, 102, 0, 1);
+$WARNING_COLOR: rgba(209, 209, 1, 1);
+$INFO_COLOR: rgba(0, 0, 221, 1);
+
+$HOVER_GREYISH: rgba(240, 243, 246, 1);
+
+$FONT: 'Montserrat', sans-serif !important;
+$FONT_SECONDARY: 'Racama', sans-serif !important;

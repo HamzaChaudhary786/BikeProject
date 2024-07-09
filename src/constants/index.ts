@@ -1,3 +1,5 @@
+import Manager from "../components/manager/Manager";
+
 export const PRIMARY_COLOR = 'rgba(159, 232, 112, 1)';
 export const PRIMARY_COLOR_DARK = 'rgba(19, 45, 0, 1)';
 export const SECONDARY_COLOR = 'rgba(22, 51, 0, 1)';
@@ -51,11 +53,14 @@ export const ASSETS = {
 };
 
 export const AvailibleValue = [
-  { value: 'Availible', label: 'Availible' },
-  { value: 'Not Availible', label: 'Not Availible' },
+  { value: "true", label: 'Availible' },
+  { value: "false", label: 'Not Availible' },
 ];
 
-export const UserTypes = [
-  { value: 'manager', label: 'Manager' },
-  { value: 'user', label: 'User' },
+
+
+
+export const UserTypeData = [
+  { value: 'Manager', label: 'Manager' },
+  { value: 'User', label: 'User' },
 ];

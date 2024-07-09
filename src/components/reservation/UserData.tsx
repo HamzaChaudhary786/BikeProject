@@ -1,10 +1,13 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BikeData } from '../../Helpers/BikeDummyData';
-import { Box, Modal, Rating, TextField } from '@mui/material';
+import { Box, CircularProgress, Modal, Rating, TextField } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import { set } from 'date-fns';
+import { useEnhancedDispatch, useEnhancedSelector } from '../../Helpers/reduxHooks';
+import * as Actions from '../../store/actions';
+import { toast } from 'react-toastify';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -21,7 +24,16 @@ const style = {
 };
 
 const UserData = () => {
+
+  const dispatch = useEnhancedDispatch();
   const currentDate = new Date();
+
+  const getBikesData = useEnhancedSelector((state) => state.user.getBikesData)
+  const userData = useEnhancedSelector((state) => state.user.userData)
+  const access_token = useEnhancedSelector((state) => state.user.accessToken);
+
+
+
 
   const todayDate = currentDate.toISOString().slice(0, 16);
 
@@ -36,54 +48,126 @@ const UserData = () => {
   const [rating, setRating] = useState('');
   const [openBox, setOpenBox] = useState(false);
   const [Id, setId] = useState('');
+  const [UserData, setUserData] = useState({})
   // const [reserveStartDate, setReserveStartDate] = useState(currentDate);
   // const [reserveEndDate, setReserveEndDate] = useState('');
   // Filtered bike data
-  const [filteredData, setFilteredData] = useState(BikeData);
+  const [filteredData, setFilteredData] = useState(getBikesData);
+  const [IsLoading, setIsLoading] = useState(false);
+
+
+  const [Error, setError] = useState('');
+
+
+  useEffect(() => {
+    getUserBikeDataValue();
+  }, []);
+
+  async function getUserBikeDataValue(load = true) {
+    if (load) {
+      setIsLoading(true);
+    }
+    await dispatch(Actions.GetUserBikesData());
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    console.log(getBikesData);
+    if (getBikesData || userData) {
+      setFilteredData(getBikesData)
+      setUserData(userData?.id)
+    } else {
+      setFilteredData([]);
+    }
+  }, [setFilteredData, getBikesData]);
+
 
   const handleFilter = (e: any) => {
     e.preventDefault();
 
+
+
+
     // Filter logic
-    const filtered = BikeData.filter((item) => {
+    const filtered = filteredData.filter((item: any) => {
       // Convert input date values to Date objects for comparison
       const startDateValue = startDate ? new Date(startDate) : null;
       console.log('startDateValue', startDateValue);
       const endDateValue = endDate ? new Date(endDate) : null;
 
       // Check each criteria
-      const matchesModel = model ? item.model.includes(model) : true;
-      const matchesColor = color ? item.color.includes(color) : true;
+      const matchesModel = model ? item.bikeModel.includes(model) : true;
+      const matchesColor = color ? item.bikeColor.includes(color) : true;
       const matchesLocation = location ? item.location.includes(location) : true;
-      const matchesRating = rating ? item.rating === parseInt(rating) : true;
+      const matchesRating = rating ? item.averageRating === parseInt(rating) : true;
 
       // Check date range availability
-      const matchesDate = item.reservationSchedule.every((schedule) => {
-        const reservedFromDate = new Date(schedule.reservedFromDate);
-        const reservedToDate = new Date(schedule.reservedToDate);
+      // const matchesDate = item.reservationSchedule.every((schedule) => {
+      //   const reservedFromDate = new Date(schedule.reservedFromDate);
+      //   const reservedToDate = new Date(schedule.reservedToDate);
 
-        // Check if the date range in the form does NOT intersect with the available schedule
-        const isStartOutside = startDateValue
-          ? startDateValue < reservedFromDate || startDateValue > reservedToDate
-          : true;
+      //   // Check if the date range in the form does NOT intersect with the available schedule
+      //   const isStartOutside = startDateValue
+      //     ? startDateValue < reservedFromDate || startDateValue > reservedToDate
+      //     : true;
 
-        console.log(isStartOutside, 'isStartout data');
-        const isEndOutside = endDateValue ? endDateValue < reservedFromDate || endDateValue > reservedToDate : true;
+      //   console.log(isStartOutside, 'isStartout data');
+      //   const isEndOutside = endDateValue ? endDateValue < reservedFromDate || endDateValue > reservedToDate : true;
 
-        const isStartValid = endDateValue ? endDateValue >= new Date() : true;
-        const isEndValid = endDateValue ? endDateValue >= new Date() : true;
+      //   const isStartValid = endDateValue ? endDateValue >= new Date() : true;
+      //   const isEndValid = endDateValue ? endDateValue >= new Date() : true;
 
-        // We want the provided range to be completely outside any reserved ranges
-        return isStartOutside && isEndOutside && isStartValid && isEndValid;
-      });
+      //   // We want the provided range to be completely outside any reserved ranges
+      //   return isStartOutside && isEndOutside && isStartValid && isEndValid;
+      // });
 
       // Return true if all criteria match
-      return matchesModel && matchesColor && matchesLocation && matchesRating && matchesDate;
+      return matchesModel && matchesColor && matchesLocation && matchesRating;
     });
 
     // Update the filtered data
     setFilteredData(filtered);
   };
+
+
+
+  const handleReserved = async (e: any) => {
+
+    e.preventDefault();
+    setIsLoading(false);
+
+
+
+    try {
+      setIsLoading(true);
+
+      let response: string | void;
+
+      setIsLoading(true);
+      response = await dispatch(Actions.ReservedBikeData(Id, startDate, endDate, access_token));
+
+
+      if (response) throw response;
+
+      setIsLoading(false);
+      toast.success('Reserved Bike Successfully');
+      setError('');
+      setModel('');
+      setColor('');
+      setLocation('');
+      setId('');
+
+      //call get user function inside this
+    } catch (error: any) {
+      setIsLoading(false);
+      if (typeof error === 'string') {
+        setError(error);
+      } else {
+        setError('Something went wrong, please try again later');
+      }
+    }
+
+  }
 
   return (
     <>
@@ -166,7 +250,7 @@ const UserData = () => {
               >
                 <Box sx={style}>
                   <div>
-                    <form action="" className="space-y-6 p-6">
+                    <form action="" onSubmit={handleReserved} className="space-y-6 p-6">
                       <h1>Reserved Bike {Id}</h1>
                       <br />
                       <label htmlFor="StartDate">Reserve Start Date</label>
@@ -176,6 +260,7 @@ const UserData = () => {
                         id="StartDate"
                         value={startDate}
                         // onChange={(e) => setReserveStartDate(e.target.value)}
+
                         variant="standard"
                         InputProps={{ readOnly: true }}
                       />
@@ -194,7 +279,15 @@ const UserData = () => {
                       />
                       <br />
 
-                      <button className="bg-[blue] px-4 py-2 text-[white]">Reserved</button>
+                      {
+                        IsLoading ?(
+                          <CircularProgress />
+                        ):(
+                      <button type='submit' className="bg-[blue] px-4 py-2 text-[white]">Reserved</button>
+
+                      )
+                      }
+
                     </form>
                   </div>
                 </Box>
@@ -203,18 +296,18 @@ const UserData = () => {
           </div>
 
           <div className="grid grid-cols-3 gap-6">
-            {filteredData.length === 0 ? (
+            {filteredData?.length === 0 ? (
               <p className="text-2xl text-[red] text-center">No bikes available matching the filter criteria.</p>
             ) : (
-              filteredData.map((item: any) => (
+              filteredData?.map((item: any) => (
                 <section key={item.id} className="space-y-2 p-4" style={{ border: '2px solid red' }}>
-                  <h1>{item.model}</h1>
+                  <h1>{item.bikeModel}</h1>
                   <p>{item.location}</p>
-                  <p>{item.color}</p>
+                  <p>{item.bikeColor}</p>
 
                   <Rating
                     name="read-only"
-                    value={item.rating}
+                    value={item.averageRating}
                     readOnly
                     precision={1}
                     emptyIcon={<StarBorderIcon style={{ color: '#d3d3d3' }} />}

@@ -13,7 +13,8 @@ const UnauthWrapper: React.FC<{ children: React.ReactNode }> = (props) => {
   const router = useRouter();
 
   const isAuth = useEnhancedSelector((state) => state.user.isAuth);
-  const userRole = 'manager';
+  const userData = useEnhancedSelector((state) => state.user.userData)
+
   const [IsLoading, setIsLoading] = useState(!isAuth);
 
   useEffect(() => {
@@ -45,8 +46,9 @@ const UnauthWrapper: React.FC<{ children: React.ReactNode }> = (props) => {
     const refreshToken = localStorage.getItem('@refresh-token');
     if (!IsLoading) {
       if (accessToken && refreshToken) {
-        if (isAuth && userRole) {
-          if (userRole === 'manager') {
+        if (isAuth && userData?.type) {
+          const userType = userData.type.toLowerCase();
+          if (userType === 'manager') {
             router.push('/manager');
           } else {
             router.push('/reservation');
@@ -65,7 +67,7 @@ const UnauthWrapper: React.FC<{ children: React.ReactNode }> = (props) => {
   }, []);
 
   async function getuserData() {
-    // await dispatch(Actions.getUserDataAction(true));
+    await dispatch(Actions.getUserDataAction(true));
     setIsLoading(false);
   }
 

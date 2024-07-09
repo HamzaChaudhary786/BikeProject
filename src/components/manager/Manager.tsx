@@ -1,12 +1,12 @@
 'use client';
-import { CircularProgress, IconButton, TextField } from '@mui/material';
+import { Box, CircularProgress, IconButton, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TableComp } from '../../commonComponents/table/index';
 // import { BikeData } from '../../Helpers/BikeDummyData';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CheckBox, Delete, VisibilityOff } from '@mui/icons-material';
-import { Bike, BikeData } from '../../interfaces';
+import { Bike, BikeData, UserDataTypes } from '../../interfaces';
 import UserData from '../reservation/UserData';
 import Link from 'next/link';
 import { reservationUserTable } from '../../Helpers/ReservationUserDummyData';
@@ -16,12 +16,14 @@ import { useEnhancedDispatch, useEnhancedSelector } from '../../Helpers/reduxHoo
 import * as Actions from '../../store/actions';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
+import { BikeStatus } from '../../Helpers/entities';
 const Manager = () => {
   const access_token = useEnhancedSelector((state) => state.user.accessToken);
 
   const [model, setModel] = useState('');
   const [color, setColor] = useState('');
   const [location, setLocation] = useState('');
+  const [rating, setRating] = useState<number>();
 
   const [IsLoadingData, setIsLoadingData] = useState(false);
   const [IsLoading, setIsLoading] = useState(false);
@@ -32,14 +34,100 @@ const Manager = () => {
   const [filterColor, setFilterColor] = useState('');
   const [filterLocation, setFilterLocation] = useState('');
   const [filterRating, setFilterRating] = useState('');
-  const [Availible, setAvailible] = useState('Availible');
+  const [Availible, setAvailible] = useState<BikeStatus>(BikeStatus.Availible);
+
+
+  console.log(Availible, "set Availible")
 
   const [Error, setError] = useState('');
 
   // const [BikeData, setBikeData] = useState<BikeData[] | null>(null)
 
   const bikeData = useEnhancedSelector((state) => state.user.bikeData);
+
+  console.log(bikeData)
   const [Filter, setFilter] = useState<BikeData[]>([]);
+  const [bikeAvailible, setBikeAvailible] = useState<BikeStatus>(BikeStatus.Empty);
+  const [boxOpen, setBoxOpen] = useState(false)
+
+
+
+  const [showPopupIndex, setShowPopupIndex] = useState<number | null>(null);
+
+
+
+
+
+  const handleMouseEnter = (index: number) => {
+    setShowPopupIndex(index);
+  };
+
+  const handleMouseLeave = (index: number) => {
+    setShowPopupIndex(null);
+  };
+
+  const handleConfirmation = (id: string | undefined) => {
+    setShowPopupIndex(null);
+    if (id) {
+      handleStatus(id);
+    }
+  };
+
+
+  const handleStatus = async (id: any) => {
+    const singleTypeData = Filter?.find((data: any) => data.id === id);
+
+    if (singleTypeData) {
+      setModel(singleTypeData.bikeModel || '');
+      setColor(singleTypeData.bikeColor || '');
+      setLocation(singleTypeData.location || '');
+
+
+      const newType = singleTypeData.status === true ? BikeStatus.Unavailible : BikeStatus.Availible;
+
+      try {
+        if (id) {
+          setIsLoading(true);
+
+          // Ensure correct syntax for dispatch
+          let response = await dispatch(Actions.UpdateBikeStatusData(
+            singleTypeData.bikeModel,
+            singleTypeData.bikeColor,
+            singleTypeData.location,
+            newType,
+            access_token,
+            id
+          ));
+
+          getBikeDataValue();
+
+          if (response) throw response;
+
+          setIsLoading(false);
+          toast.success('User Updated Successfully');
+          setError('');
+          setModel('');
+          setColor('');
+          setLocation('');
+          // setUserType(BikeStatus.Empty);
+          setId('');
+        }
+      } catch (error: any) {
+        setIsLoading(false);
+        if (typeof error === 'string') {
+          setError(error);
+          console.log(error);
+        } else {
+          setError('Something went wrong, please try again later');
+        }
+      }
+    } else {
+      console.warn(`No data found for id: ${id}`);
+    }
+  };
+
+
+
 
   useEffect(() => {
     getBikeDataValue();
@@ -102,7 +190,7 @@ const Manager = () => {
 
   const handleAddUpdateBike = async (e: any) => {
     e.preventDefault();
-    setIsLoading(false);
+    setIsLoadingData(false);
 
     if (model === '' || color === '' || location === '') {
       setError('Please Fill Out Fields');
@@ -110,22 +198,22 @@ const Manager = () => {
     }
 
     try {
-      setIsLoading(true);
+      setIsLoadingData(true);
 
       let response: string | void;
       if (Id) {
-        setIsLoading(true);
+        setIsLoadingData(true);
         response = await dispatch(Actions.UpdateBikeData(model, color, location, access_token, Id));
         getBikeDataValue();
       } else {
-        setIsLoading(true);
+        setIsLoadingData(true);
         response = await dispatch(Actions.AddBikeData(model, color, location, access_token));
         getBikeDataValue();
       }
 
       if (response) throw response;
 
-      setIsLoading(false);
+      setIsLoadingData(false);
       toast.success('Bike Create Successfully');
       setError('');
       setModel('');
@@ -135,7 +223,7 @@ const Manager = () => {
 
       //call get user function inside this
     } catch (error: any) {
-      setIsLoading(false);
+      setIsLoadingData(false);
       if (typeof error === 'string') {
         setError(error);
       } else {
@@ -203,7 +291,7 @@ const Manager = () => {
                 variant="outlined"
               />
               <br />
-              {IsLoading ? (
+              {IsLoadingData ? (
                 <CircularProgress />
               ) : Id ? (
                 <button className="bg-[blue] text-[white] py-3 px-8 text-xl" onClick={handleAddUpdateBike}>
@@ -312,7 +400,30 @@ const Manager = () => {
                   //     return <CircularProgress />;
                   return (
                     <>
-                      <OptionValue value={Availible} onChange={setAvailible} menuItems={AvailibleValue}></OptionValue>
+                      <div
+                        className="cursor-pointer text-xl hover:text-[blue] relative"
+                        onMouseEnter={() => handleMouseEnter(index)}
+                        onMouseLeave={() => handleMouseLeave(index)}
+                      >
+                        {row.status ? (<div>Available</div>) : (<div>Not Available</div>)}
+                        {showPopupIndex === index && (
+                          <div className="absolute top-full left-0 bg-white border border-gray-300 p-2 shadow-md z-10 w-full bg-[black] text-[white]">
+                            <p className="text-xs">Are you sure to change Status?</p>
+                            <button
+                              onClick={() => handleConfirmation(row.id)}
+                              className="bg-blue-500 text-white px-2 py-1 mt-2"
+                            >
+                              Yes
+                            </button>
+                            <button
+                              onClick={() => handleMouseLeave(index)}
+                              className="bg-gray-300 text-black px-2 py-1 mt-2 ml-2"
+                            >
+                              No
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </>
                   );
                 },
@@ -355,3 +466,5 @@ const Manager = () => {
 };
 
 export default Manager;
+
+

@@ -17,7 +17,10 @@ const AuthWrapper: React.FC<{ children: React.ReactNode; hideNav?: boolean; allo
   const isAuth = useEnhancedSelector((state) => state.user.isAuth);
   const userData = useEnhancedSelector((state) => state.user.userData);
   // const userRole = useEnhancedSelector((state) => state.user.role); // assuming `role` is part of user data in the Redux store
-  const userRole = 'manager';
+  // const userRole = 'user';
+
+
+
 
   useEffect(() => {
     const accessToken = localStorage.getItem('@access-token');
@@ -38,23 +41,39 @@ const AuthWrapper: React.FC<{ children: React.ReactNode; hideNav?: boolean; allo
   }, [dispatch]);
   const [isLoading, setIsLoading] = useState(!isAuth);
   useEffect(() => {
-    if (!isLoading && isAuth && userRole && location) {
+    if (!isLoading && isAuth && userData?.type && location) {
       setIsLoading(true);
 
-      if (userRole === 'manager' && location === '/reservation') {
-        router.push('/manager');
-      } else if (userRole === 'user' && location === '/manager') {
-        router.push('/reservation');
+      const userType = userData.type.toLowerCase();
+
+      if (userType === 'manager') {
+        if (location === '/reservation') {
+          setIsLoading(true)
+          router.push('/manager');
+        } else if (location === '/my-reservation') {
+          setIsLoading(true)
+          router.push('/manager');
+        } else {
+          setIsLoading(false);
+        }
+      } else if (userType === 'user') {
+        if (location === '/manager') {
+          router.push('/reservation');
+        } else if (location === '/users') {
+          router.push('/manager');
+        } else {
+          setIsLoading(false);
+        }
       } else {
         setIsLoading(false);
       }
     }
-  }, [isLoading, isAuth, userRole, location, router]);
+  }, [isLoading, isAuth, userData, location, router]);
 
   async function getUserData() {
     if (userData) return;
     // Fetch user data and update the loading state
-    // await dispatch(Actions.getUserDataAction(true));
+    await dispatch(Actions.getUserDataAction(true));
     setIsLoading(false);
   }
 

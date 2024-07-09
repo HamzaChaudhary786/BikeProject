@@ -1,15 +1,20 @@
 'use client';
 
-import { Box, IconButton, Modal, TextField } from '@mui/material';
+import { Box, CircularProgress, IconButton, Modal, TextField } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { TableComp } from '../../commonComponents/table/index';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import { CheckBox, Delete, Password, VisibilityOff } from '@mui/icons-material';
-import { Bike } from '../../interfaces';
+import { Bike, UserDataTypes } from '../../interfaces';
 import { UserData } from '../../Helpers/UserDummyData';
 import OptionValue from '../../Helpers/OptionValue';
-import { UserTypes } from '../../constants';
+
+import * as Actions from '../../store/actions';
+import { useEnhancedDispatch, useEnhancedSelector } from '../../Helpers/reduxHooks';
+import { toast } from 'react-toastify';
+import { UserTypes } from '../../Helpers/entities';
+import { UserTypeData } from '../../constants';
 
 const style = {
   position: 'absolute' as 'absolute',
@@ -26,14 +31,19 @@ const style = {
 };
 
 const Users = () => {
+
+  const dispatch = useEnhancedDispatch();
+  const access_token = useEnhancedSelector((state) => state.user.accessToken);
+  const allUserData = useEnhancedSelector((state) => state.user.allUserData);
   const [IsLoadingData, setIsLoadingData] = useState(false);
+  const [Id, setId] = useState('');
 
   const [userData, setUserData] = useState(UserData);
   const [viewDialogOpen, setViewDialogOpen] = useState(false);
   const [singleUserData, setSingleUserData] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const [editId, setEditId] = useState<String | undefined>('');
+  const [editId, setEditId] = useState<string | undefined>('');
   //Filter User Data
 
   const [name, setName] = useState('');
@@ -44,50 +54,54 @@ const Users = () => {
 
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [userType, setUserType] = useState('');
+  const [userType, setUserType] = useState<UserTypes>(UserTypes.Manager);
+  const [password, setPassword] = useState('');
+
+
+  ////////////////////
+
+  const [IsLoading, setIsLoading] = useState(false);
+
+  const [Error, setError] = useState('');
+
+
 
   const filterUser = (e: any) => {
+
     e.preventDefault();
 
     if (name === '' || email === '' || types === '') {
-      setUserData(UserData);
+      setFilter(allUserData);
     }
 
-    const filteredData = UserData.filter((data: any) => {
-      const matchName = name ? data.name.toLowerCase().includes(name.toLowerCase()) : true;
+    const filteredData = allUserData.filter((data: any) => {
+      const matchName = name ? data.userName.toLowerCase().includes(name.toLowerCase()) : true;
       const matchEmail = email ? data.email.toLowerCase().includes(email.toLowerCase()) : true;
       const matchType = types ? data.type.toLowerCase().includes(types.toLowerCase()) : true;
 
       return matchName && matchEmail && matchType;
     });
 
-    setUserData(filteredData);
+    setFilter(filteredData);
   };
 
   const handleViewDialog = (id: string | undefined) => {
     setViewDialogOpen(true);
 
-    const viewData = UserData?.filter((view: any) => view.id === id);
+    const viewData = Filter?.filter((view: any) => view.id === id);
 
-    console.log('view data is ', viewData);
 
     if (viewData.length > 0) {
-      setSingleUserData(viewData);
+      setFilter(viewData);
     }
+
   };
 
   const [showPopupIndex, setShowPopupIndex] = useState<number | null>(null);
 
-  const handleStatus = (id: string | undefined) => {
-    const singleTypeData = userData?.find((data: any) => data.id === id);
 
-    if (singleTypeData) {
-      const newType = singleTypeData.type === 'user' ? 'manager' : 'user';
-      const updatedUserData = userData.map((data: any) => (data.id === id ? { ...data, type: newType } : data));
-      console.log(updatedUserData, 'updatedUserData');
-      setUserData(updatedUserData);
-    }
-  };
+
+
 
   const handleMouseEnter = (index: number) => {
     setShowPopupIndex(index);
@@ -99,8 +113,182 @@ const Users = () => {
 
   const handleConfirmation = (id: string | undefined) => {
     setShowPopupIndex(null);
-    handleStatus(id);
+    if (id) {
+      handleStatus(id);
+    }
   };
+
+
+  const handleStatus = async (id: any) => {
+    const singleTypeData = Filter?.find((data: UserDataTypes) => data.id === id);
+
+    if (singleTypeData) {
+      setUserName(singleTypeData.userName || '');
+      setUserEmail(singleTypeData.email || '');
+      const newType = singleTypeData.type === 'User' ? UserTypes.Manager : UserTypes.User;
+
+      try {
+        if (id) {
+          setIsLoading(true);
+
+          // Ensure correct syntax for dispatch
+          let response = await dispatch(Actions.UpdateUserData(
+            singleTypeData.userName,
+            singleTypeData.email,
+            newType,
+            access_token,
+            id
+          ));
+
+          getUserDataValue();
+
+          if (response) throw response;
+
+          setIsLoading(false);
+          toast.success('User Updated Successfully');
+          setError('');
+          setUserName('');
+          setUserEmail('');
+          setUserType(UserTypes.Empty);
+          setPassword('');
+          setId('');
+        }
+      } catch (error: any) {
+        setIsLoading(false);
+        if (typeof error === 'string') {
+          setError(error);
+          console.log(error);
+        } else {
+          setError('Something went wrong, please try again later');
+        }
+      }
+    } else {
+      console.warn(`No data found for id: ${id}`);
+    }
+  };
+
+
+
+
+  const [Filter, setFilter] = useState<UserDataTypes[]>([]);
+
+  useEffect(() => {
+    getUserDataValue();
+  }, []);
+
+  async function getUserDataValue(load = true) {
+    if (load) {
+      setIsLoading(true);
+    }
+    await dispatch(Actions.GetUserData());
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    console.log(allUserData, "userdatas is");
+    if (allUserData) {
+      setFilter(allUserData);
+    } else {
+      setFilter([]);
+    }
+  }, [allUserData]);
+
+
+
+
+  useEffect(() => {
+    const singleData = Filter.find((itm: any) => itm.id === editId);
+
+
+
+
+    if (singleData) {
+      setUserName(singleData.userName);
+      setUserEmail(singleData.email);
+      setUserType(singleData.type);
+
+
+
+
+
+
+    }
+  }, [editId, Filter]);
+
+
+
+  const handleAddUpdateUser = async (e: any) => {
+
+    e.preventDefault();
+    setIsLoading(false);
+
+    if (userName === '' || userEmail === '' || userType === '') {
+      setError('Please Fill Out Fields');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      let response: string | void;
+      if (editId) {
+        setIsLoading(true);
+        response = await dispatch(Actions.UpdateUserData(userName, userEmail, userType, access_token, editId));
+        getUserDataValue();
+      } else {
+        setIsLoading(true);
+        response = await dispatch(Actions.AddUserData(userName, userEmail, userType, password, access_token));
+        getUserDataValue();
+      }
+
+      if (response) throw response;
+      setDialogOpen(false)
+      setIsLoading(false);
+      toast.success('Bike Create Successfully');
+      setError('');
+      setUserName('');
+      setUserEmail('');
+      setUserType(UserTypes.Empty);
+      setPassword('');
+      setId('');
+
+      //call get user function inside this
+    } catch (error: any) {
+      setIsLoading(false);
+      if (typeof error === 'string') {
+        setError(error);
+      } else {
+        setError('Something went wrong, please try again later');
+      }
+    }
+
+  }
+
+
+  const handleDeleteUser = async (id: any) => {
+
+    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      const response = await dispatch(Actions.DeleteUserData(id, access_token));
+      getUserDataValue();
+      if (response) throw response;
+
+      setIsLoading(false);
+      toast.success('Bike Delete Successfully');
+
+      //call get user function inside this
+    } catch (error: any) {
+      setIsLoading(false);
+      if (typeof error === 'string') {
+      } else {
+        setError('Something went wrong, please try again later');
+      }
+    }
+  }
+
+
+
 
   return (
     <>
@@ -162,16 +350,14 @@ const Users = () => {
         </div>
         <div>
           <TableComp
-            data={userData}
+
+            data={Filter}
             isLoading={IsLoadingData}
             columns={[
-              {
-                Heading: 'Id',
-                accessor: 'id',
-              },
+
               {
                 Heading: 'Name',
-                accessor: 'name',
+                accessor: 'userName',
               },
               {
                 Heading: 'Email',
@@ -179,7 +365,6 @@ const Users = () => {
               },
               {
                 Heading: 'Type',
-
                 Cell: (row: Bike, index) => {
                   return (
                     <>
@@ -211,7 +396,6 @@ const Users = () => {
                   );
                 },
               },
-
               {
                 Heading: 'Actions',
                 Cell: (row: Bike, index) => {
@@ -229,7 +413,10 @@ const Users = () => {
                       >
                         <EditIcon color="secondary" />
                       </IconButton>
-                      <IconButton className="mt-4 mr-5">
+                      <IconButton className="mt-4 mr-5"
+                        onClick={() => {
+                          handleDeleteUser(row.id);
+                        }}>
                         <Delete color="primary" />
                       </IconButton>
 
@@ -249,6 +436,8 @@ const Users = () => {
           />
         </div>
 
+
+
         <div>
           <Modal
             open={dialogOpen}
@@ -266,7 +455,6 @@ const Users = () => {
                     <TextField
                       type="text"
                       label="Name"
-                      id="StartDate"
                       value={userName}
                       onChange={(e) => setUserName(e.target.value)}
                       variant="outlined"
@@ -275,41 +463,57 @@ const Users = () => {
                     <br />
                     <TextField
                       type="email"
-                      id="EndDate"
+
                       label="Email"
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
                       variant="outlined"
                     />
                     <br />
-                    {/* <TextField
-                      type="text"
-                      id="Type"
-                      label="Type"
-                      value={types}
-                      onChange={(e) => setTypes(e.target.value)}
-                      variant="outlined"
-                    /> */}
+
 
                     <OptionValue
                       label="Type*"
                       value={userType}
                       onChange={setUserType}
-                      menuItems={UserTypes}
-                    ></OptionValue>
+                      menuItems={UserTypeData}
+                    />
                     <br />
+
+                    {
+                      !editId && (
+                        <TextField
+                          type="password"
+                          id="EndDate"
+                          label="Password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          variant="outlined"
+                        />
+                      )
+                    }
                   </div>
 
                   <div>
-                    {editId ? (
-                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]">
+
+
+                    {IsLoading ? (
+                      <CircularProgress />
+                    ) : editId ? (
+                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
+                        onClick={handleAddUpdateUser}>
                         Edit User
                       </button>
                     ) : (
-                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]">
+                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
+                        onClick={handleAddUpdateUser}>
                         Add User
                       </button>
                     )}
+
+
+
+
                   </div>
                 </form>
               </div>
@@ -318,9 +522,13 @@ const Users = () => {
         </div>
 
         <div>
-          <Modal open={viewDialogOpen} onClose={() => setViewDialogOpen(false)}>
+          <Modal open={viewDialogOpen} onClose={() => {
+            setFilter(allUserData)
+            setViewDialogOpen(false)
+
+          }}>
             <Box sx={style}>
-              {singleUserData.map((itm: any) => (
+              {Filter.map((itm: any) => (
                 <div key={itm.id} className="space-y-4">
                   <h2>{itm.name}</h2>
                   <p>Email: {itm.email}</p>
@@ -338,19 +546,29 @@ const Users = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {itm.reservation.map((item: any, index: any) => (
-                          <tr key={index}>
-                            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.model}</td>
-                            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
-                            <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.color}</td>
-                            <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                              {new Date(item.startDate).toLocaleString()}
-                            </td>
-                            <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                              {new Date(item.endDate).toLocaleString()}
-                            </td>
-                          </tr>
-                        ))}
+
+                        {
+                          itm.reservation?.length === 0 ? (
+                            <div>
+                              No Reservation
+                            </div>
+                          ) : (
+                            itm.reservations?.map((item: any, index: any) => (
+                              <tr key={index}>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.model}</td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.color}</td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                  {new Date(item.startDate).toLocaleString()}
+                                </td>
+                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                  {new Date(item.endDate).toLocaleString()}
+                                </td>
+                              </tr>
+                            )) || <tr><td colSpan={5} style={{ textAlign: 'center', border: '1px solid #ddd', padding: '8px' }}>No Reservation</td></tr>
+                          )
+                        }
+
                       </tbody>
                     </table>
                   </ul>

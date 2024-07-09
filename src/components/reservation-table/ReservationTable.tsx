@@ -3,18 +3,25 @@
 import { useParams } from 'next/navigation';
 import React from 'react';
 import { reservationUserTable } from '../../Helpers/ReservationUserDummyData';
+import { useEnhancedSelector } from '../../Helpers/reduxHooks';
 
 const ReservationTable = () => {
-  const { id } = useParams<{ id: string }>();
+  const { id } = useParams<{ id: string }>(); 
+  const bikeData = useEnhancedSelector((state) => state.user.bikeData);
+  
+  
+  const singleReserveData = bikeData?.filter((item: any) => item.id === id);
 
-  const singleReserveData = reservationUserTable.filter((item: any) => item.id === parseInt(id));
+
+  console.log(singleReserveData,"sindle data")
+  
 
   return (
     <>
       <div>
         <div>
           {singleReserveData &&
-            singleReserveData.map((item) => {
+            singleReserveData.map((item: any) => {
               return (
                 <>
                   <div>
@@ -23,7 +30,7 @@ const ReservationTable = () => {
                         Bike Color : <span className="text-[red] text-2xl">{item.bikeColor}</span>
                       </h1>
                       <h1>
-                        Model: <span className="text-[red] text-2xl">{item.bikeModal}</span>
+                        Model: <span className="text-[red] text-2xl">{item.bikeModel}</span>
                       </h1>
                     </section>
                     <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
@@ -71,3 +78,7 @@ const ReservationTable = () => {
 };
 
 export default ReservationTable;
+function useSelector(arg0: (state: any) => any) {
+  throw new Error('Function not implemented.');
+}
+

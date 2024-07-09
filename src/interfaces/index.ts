@@ -11,6 +11,22 @@ export interface UserStore {
   accessToken: null | string;
   refreshToken: null | string;
   bikeData: any;
+  allUserData: any;
+  getBikesData: any;
+  previousReservations: PreviousReservation[]
+}
+
+export interface PreviousReservation {
+  id: string;
+  bikeId: string;
+  userId: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+  bikeModel: string; 
+  bikeColor: string; 
+  location: string;  
 }
 
 export interface Reservation {
@@ -33,6 +49,25 @@ export interface BikeData {
   reservation: Reservation[];
 }
 
+export interface Reservation {
+  model: string;
+  location: string;
+  color: string;
+  startDate: string; // ISO date string
+  endDate: string;   // ISO date string
+}
+
+// Define the structure for the user data
+export interface UserDataTypes {
+  userName: string;
+  id: number;
+  name: string;
+  email: string;
+  type: any; // You can restrict this to specific types if needed
+  reservation: Reservation[]; // An array of reservations
+}
+
+
 export interface Bike {
   id?: string;
   model?: string;
@@ -52,10 +87,18 @@ export interface FormValues {
 }
 
 export interface UserData {
+  userName: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
+  map: any;
+  type: SetStateAction<{}>;
   id: string;
 }
 
 export interface AuthSuccessResponse {
   accessToken: string;
   refreshToken: string;
+}
+
+
+export interface GetUserDataResponse {
+  data: UserData;
 }

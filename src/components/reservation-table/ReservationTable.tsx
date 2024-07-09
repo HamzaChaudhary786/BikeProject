@@ -6,15 +6,15 @@ import { reservationUserTable } from '../../Helpers/ReservationUserDummyData';
 import { useEnhancedSelector } from '../../Helpers/reduxHooks';
 
 const ReservationTable = () => {
-  const { id } = useParams<{ id: string }>(); 
+  const { id } = useParams<{ id: string }>();
   const bikeData = useEnhancedSelector((state) => state.user.bikeData);
-  
-  
+
+
   const singleReserveData = bikeData?.filter((item: any) => item.id === id);
 
 
-  console.log(singleReserveData,"sindle data")
-  
+  console.log(singleReserveData, "sindle data")
+
 
   return (
     <>
@@ -54,16 +54,29 @@ const ReservationTable = () => {
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {item.reservation.map((reserve: any) => (
-                          <tr key={reserve.id}>
-                            <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.name}</td>
-                            <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.type}</td>
-                            <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.startDate}</td>
-                            <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.endDate}</td>
+                        {item.reservations.length === 0 || item.reservations.every((reserve: { name: null; email: null; type: null; startDate: null; endDate: null; rating: null; }) =>
+                          reserve.name === null && reserve.email === null && reserve.type === null &&
+                          reserve.startDate === null && reserve.endDate === null && reserve.rating === null
+                        ) ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-4 whitespace-nowrap text-center">
+                              No User Reserve This Bike
+                            </td>
                           </tr>
-                        ))}
+                        ) : (
+                          item.reservations.map((reserve: any) => (
+                            <tr key={reserve.id}>
+                              <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.name}</td>
+                              <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.email}</td>
+                              <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.type}</td>
+                              <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.startDate}</td>
+                              <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reserve.endDate}</td>
+                            </tr>
+                          ))
+                        )}
                       </tbody>
+
+
                     </table>
                   </div>
                 </>

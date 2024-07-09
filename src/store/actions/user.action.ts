@@ -195,7 +195,7 @@ export const UpdateBikeData = (
   };
 };
 
-export const DeleteBikeData = (id: string, access_token: null | string): AppThunkPromise<string | void> => {
+export const DeleteBikeData = (id: string | undefined, access_token: null | string): AppThunkPromise<string | void> => {
   return async (dispatch) => {
     try {
       console.log('function id is', id);
@@ -216,12 +216,20 @@ export const DeleteBikeData = (id: string, access_token: null | string): AppThun
   };
 };
 
-export const GetBikesData = (): AppThunkPromise<string | void> => {
+export const GetBikesData = (filterModel: string, filterColor: string, filterLocation: string, filterRating: string): AppThunkPromise<string | void> => {
   return async (dispatch) => {
     try {
+      const params: Record<string, string | undefined> = {};
+
+      if (filterModel) params.bikeModel = filterModel;
+      if (filterColor) params.bikeColor = filterColor;
+      if (filterLocation) params.location = filterLocation;
+      if (filterRating) params.averageRating = filterRating;
+
       const response = await apiRequest<GenericData<AuthSuccessResponse>>({
-        url: '/manager/bikes',
+        url: '/manager/bikes/',
         method: 'GET',
+        params,
       });
 
       dispatch(ReducerActions.setBikesData(response.data || []));
@@ -233,6 +241,7 @@ export const GetBikesData = (): AppThunkPromise<string | void> => {
     }
   };
 };
+
 
 
 export const AddUserData = (
@@ -293,13 +302,22 @@ export const UpdateUserData = (
 };
 
 
-export const GetUserData = (): AppThunkPromise<string | void> => {
+export const GetUserData = (name: string | null, email: string | null, types: string | null): AppThunkPromise<string | void> => {
   return async (dispatch) => {
+
+
+
     try {
+
+      const params: Record<string, string | undefined> = {};
+      if (name) params.userName = name;
+      if (email) params.email = email;
+      if (types) params.type = types;
 
       const response = await apiRequest<GenericData<AuthSuccessResponse>>({
         url: '/manager/users',
         method: 'GET',
+        params,
       });
 
       dispatch(ReducerActions.setAllUserData(response.data || []));
@@ -339,13 +357,23 @@ export const DeleteUserData = (id: string, access_token: null | string): AppThun
 
 
 
-export const GetUserBikesData = (): AppThunkPromise<string | void> => {
+export const GetUserBikesData = (startDate: string | undefined, endDate: string | undefined, model: string | undefined, color: string | undefined, location: string | undefined, rating: string | undefined): AppThunkPromise<string | void> => {
   return async (dispatch) => {
     try {
+
+      const params: Record<string, string | undefined> = {};
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      if (model) params.bikeModel = model;
+      if (color) params.bikeColor = color;
+      if (location) params.location = location;
+      if (rating) params.rating = rating;
 
       const response = await apiRequest<GenericData<AuthSuccessResponse>>({
         url: '/user/bikes',
         method: 'GET',
+        params,
+
       });
 
       dispatch(ReducerActions.setUserBikesData(response.data || []));
@@ -491,7 +519,7 @@ export const UpdateBikeStatusData = (
         bikeModel,
         bikeColor,
         location,
-        status:newType
+        status: newType
       };
 
       const response = await apiRequest<GenericData<AuthSuccessResponse>>({

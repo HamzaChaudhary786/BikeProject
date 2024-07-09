@@ -48,7 +48,7 @@ const UserData = () => {
   const [rating, setRating] = useState('');
   const [openBox, setOpenBox] = useState(false);
   const [Id, setId] = useState('');
-  const [UserData, setUserData] = useState({})
+  const [UserData, setUserData] = useState<string | undefined>()
   // const [reserveStartDate, setReserveStartDate] = useState(currentDate);
   // const [reserveEndDate, setReserveEndDate] = useState('');
   // Filtered bike data
@@ -67,7 +67,7 @@ const UserData = () => {
     if (load) {
       setIsLoading(true);
     }
-    await dispatch(Actions.GetUserBikesData());
+    await dispatch(Actions.GetUserBikesData(startDate, endDate, model, color, location, rating));
     setIsLoading(false);
   }
 
@@ -82,61 +82,67 @@ const UserData = () => {
   }, [setFilteredData, getBikesData]);
 
 
-  const handleFilter = (e: any) => {
+  const handleFilter = async (e: React.FormEvent) => {
     e.preventDefault();
 
 
+    try {
+      setIsLoading(true)
+      await dispatch(Actions.GetUserBikesData(startDate, endDate, model, color, location, rating));
+      setIsLoading(false)
+    } catch (error) {
+      setIsLoading(false)
+      console.log(error, "error")
+    }
 
+    // // Filter logic
+    // const filtered = filteredData.filter((item: any) => {
 
-    // Filter logic
-    const filtered = filteredData.filter((item: any) => {
-      // Convert input date values to Date objects for comparison
-      const startDateValue = startDate ? new Date(startDate) : null;
-      console.log('startDateValue', startDateValue);
-      const endDateValue = endDate ? new Date(endDate) : null;
+    //   const startDateValue = startDate ? new Date(startDate) : null;
+    //   console.log('startDateValue', startDateValue);
+    //   const endDateValue = endDate ? new Date(endDate) : null;
 
-      // Check each criteria
-      const matchesModel = model ? item.bikeModel.includes(model) : true;
-      const matchesColor = color ? item.bikeColor.includes(color) : true;
-      const matchesLocation = location ? item.location.includes(location) : true;
-      const matchesRating = rating ? item.averageRating === parseInt(rating) : true;
+    //   // Check each criteria
+    //   const matchesModel = model ? item.bikeModel.includes(model) : true;
+    //   const matchesColor = color ? item.bikeColor.includes(color) : true;
+    //   const matchesLocation = location ? item.location.includes(location) : true;
+    //   const matchesRating = rating ? item.averageRating === parseInt(rating) : true;
 
-      // Check date range availability
-      // const matchesDate = item.reservationSchedule.every((schedule) => {
-      //   const reservedFromDate = new Date(schedule.reservedFromDate);
-      //   const reservedToDate = new Date(schedule.reservedToDate);
+    //   const matchesDate = item.reservationSchedule.every((schedule) => {
+    //     const reservedFromDate = new Date(schedule.reservedFromDate);
+    //     const reservedToDate = new Date(schedule.reservedToDate);
 
-      //   // Check if the date range in the form does NOT intersect with the available schedule
-      //   const isStartOutside = startDateValue
-      //     ? startDateValue < reservedFromDate || startDateValue > reservedToDate
-      //     : true;
+    //     // Check if the date range in the form does NOT intersect with the available schedule
+    //     const isStartOutside = startDateValue
+    //       ? startDateValue < reservedFromDate || startDateValue > reservedToDate
+    //       : true;
 
-      //   console.log(isStartOutside, 'isStartout data');
-      //   const isEndOutside = endDateValue ? endDateValue < reservedFromDate || endDateValue > reservedToDate : true;
+    //     console.log(isStartOutside, 'isStartout data');
+    //     const isEndOutside = endDateValue ? endDateValue < reservedFromDate || endDateValue > reservedToDate : true;
 
-      //   const isStartValid = endDateValue ? endDateValue >= new Date() : true;
-      //   const isEndValid = endDateValue ? endDateValue >= new Date() : true;
+    //     const isStartValid = endDateValue ? endDateValue >= new Date() : true;
+    //     const isEndValid = endDateValue ? endDateValue >= new Date() : true;
 
-      //   // We want the provided range to be completely outside any reserved ranges
-      //   return isStartOutside && isEndOutside && isStartValid && isEndValid;
-      // });
+    //     // We want the provided range to be completely outside any reserved ranges
+    //     return isStartOutside && isEndOutside && isStartValid && isEndValid;
+    //   });
 
-      // Return true if all criteria match
-      return matchesModel && matchesColor && matchesLocation && matchesRating;
-    });
+    //   return matchesModel && matchesColor && matchesLocation && matchesRating;
+    // });
 
-    // Update the filtered data
-    setFilteredData(filtered);
+    // setFilteredData(filtered);
   };
 
 
 
-  const handleReserved = async (e: any) => {
+  const handleReserved = async (e:React.FormEvent) => {
 
     e.preventDefault();
+
+    if (startDate === '' || endDate === '') {
+      return
+    }
     setIsLoading(false);
-
-
 
     try {
       setIsLoading(true);
@@ -158,7 +164,7 @@ const UserData = () => {
       setId('');
 
       //call get user function inside this
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
       if (typeof error === 'string') {
         setError(error);
@@ -232,9 +238,13 @@ const UserData = () => {
                 variant="outlined"
               />
 
-              <button type="submit" className="p-3 w-full bg-[#a1a2] text-[#ffff]">
-                Filter
-              </button>
+              {
+                IsLoading ? (<CircularProgress />) : (
+                  <button type="submit" className="p-3 w-full bg-[#a1a2] text-[#ffff]">
+                    Filter
+                  </button>
+                )
+              }
             </div>
           </form>
         </div>
@@ -251,7 +261,7 @@ const UserData = () => {
                 <Box sx={style}>
                   <div>
                     <form action="" onSubmit={handleReserved} className="space-y-6 p-6">
-                      <h1>Reserved Bike {Id}</h1>
+                      <h1>{model}</h1>
                       <br />
                       <label htmlFor="StartDate">Reserve Start Date</label>
                       <br />
@@ -259,7 +269,6 @@ const UserData = () => {
                         type="datetime-local"
                         id="StartDate"
                         value={startDate}
-                        // onChange={(e) => setReserveStartDate(e.target.value)}
 
                         variant="standard"
                         InputProps={{ readOnly: true }}
@@ -273,20 +282,22 @@ const UserData = () => {
                         type="datetime-local"
                         id="EndDate"
                         value={endDate}
-                        // onChange={(e) => setReserveEndDate(e.target.value)}
+
                         variant="standard"
                         InputProps={{ readOnly: true }}
                       />
                       <br />
 
                       {
-                        IsLoading ?(
+                        IsLoading ? (
                           <CircularProgress />
-                        ):(
-                      <button type='submit' className="bg-[blue] px-4 py-2 text-[white]">Reserved</button>
+                        ) : (
+                          <button type='submit' className="bg-[blue] px-4 py-2 text-[white]">Reserved</button>
 
-                      )
+                        )
                       }
+
+                      <p>{Error}</p>
 
                     </form>
                   </div>
@@ -295,40 +306,44 @@ const UserData = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
-            {filteredData?.length === 0 ? (
-              <p className="text-2xl text-[red] text-center">No bikes available matching the filter criteria.</p>
-            ) : (
-              filteredData?.map((item: any) => (
-                <section key={item.id} className="space-y-2 p-4" style={{ border: '2px solid red' }}>
-                  <h1>{item.bikeModel}</h1>
-                  <p>{item.location}</p>
-                  <p>{item.bikeColor}</p>
+          {
+            IsLoading ? (<div className='w-96 h-full grid justify-items-start  '>
+              <CircularProgress />
+            </div>) : (<div className="grid grid-cols-3 gap-6">
+              {filteredData?.length === 0 ? (
+                <p className="text-2xl text-[red] text-center">No bikes available matching the filter criteria.</p>
+              ) : (
+                filteredData?.map((item: any) => (
+                  <section key={item.id} className="space-y-2 p-4" style={{ border: '2px solid red' }}>
+                    <h1>{item.bikeModel}</h1>
+                    <p>{item.location}</p>
+                    <p>{item.bikeColor}</p>
 
-                  <Rating
-                    name="read-only"
-                    value={item.averageRating}
-                    readOnly
-                    precision={1}
-                    emptyIcon={<StarBorderIcon style={{ color: '#d3d3d3' }} />}
-                    icon={<StarIcon style={{ color: '#ffd700' }} />}
-                  />
+                    <Rating
+                      name="read-only"
+                      value={item.averageRating}
+                      readOnly
+                      precision={1}
+                      emptyIcon={<StarBorderIcon style={{ color: '#d3d3d3' }} />}
+                      icon={<StarIcon style={{ color: '#ffd700' }} />}
+                    />
 
-                  <div>
-                    <button
-                      className="px-4 py-3 bg-[blue] text-[white]"
-                      onClick={() => {
-                        setOpenBox(true);
-                        setId(item.id);
-                      }}
-                    >
-                      Reserved
-                    </button>
-                  </div>
-                </section>
-              ))
-            )}
-          </div>
+                    <div>
+                      <button
+                        className="px-4 py-3 bg-[blue] text-[white]"
+                        onClick={() => {
+                          setOpenBox(true);
+                          setId(item.id);
+                        }}
+                      >
+                        Reserved
+                      </button>
+                    </div>
+                  </section>
+                ))
+              )}
+            </div>)
+          }
         </div>
       </div>
     </>

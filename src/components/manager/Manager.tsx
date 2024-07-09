@@ -27,7 +27,7 @@ const Manager = () => {
 
   const [IsLoadingData, setIsLoadingData] = useState(false);
   const [IsLoading, setIsLoading] = useState(false);
-  const [Id, setId] = useState('');
+  const [Id, setId] = useState<string | undefined>('');
   const [Status, setStatus] = useState<Boolean>();
 
   const [filterModel, setFilterModel] = useState('');
@@ -37,15 +37,14 @@ const Manager = () => {
   const [Availible, setAvailible] = useState<BikeStatus>(BikeStatus.Availible);
 
 
-  console.log(Availible, "set Availible")
 
   const [Error, setError] = useState('');
 
-  // const [BikeData, setBikeData] = useState<BikeData[] | null>(null)
+
 
   const bikeData = useEnhancedSelector((state) => state.user.bikeData);
 
-  console.log(bikeData)
+
   const [Filter, setFilter] = useState<BikeData[]>([]);
   const [bikeAvailible, setBikeAvailible] = useState<BikeStatus>(BikeStatus.Empty);
   const [boxOpen, setBoxOpen] = useState(false)
@@ -74,7 +73,7 @@ const Manager = () => {
   };
 
 
-  const handleStatus = async (id: any) => {
+  const handleStatus = async (id: string) => {
     const singleTypeData = Filter?.find((data: any) => data.id === id);
 
     if (singleTypeData) {
@@ -129,33 +128,13 @@ const Manager = () => {
 
 
 
-  useEffect(() => {
-    getBikeDataValue();
-  }, []);
-
-  async function getBikeDataValue(load = true) {
-    if (load) {
-      setIsLoading(true);
-    }
-    await dispatch(Actions.GetBikesData());
-    setIsLoading(false);
-  }
-
-  useEffect(() => {
-    console.log(bikeData);
-    if (bikeData) {
-      setFilter(bikeData);
-    } else {
-      setFilter([]); // Set to an empty array if bikeData is null
-    }
-  }, [bikeData]);
 
   const dispatch = useEnhancedDispatch();
   const router = useRouter();
 
-  console.log('Bike Data', bikeData);
 
-  const handleEdit = (id: any) => {
+
+  const handleEdit = (id: string | undefined) => {
     setId(id);
   };
 
@@ -169,26 +148,60 @@ const Manager = () => {
     }
   }, [Id]);
 
-  const handleBikeFilter = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (filterModel === '' || filterColor === '' || filterLocation === '' || filterRating === '') {
+
+  useEffect(() => {
+    getBikeDataValue();
+  }, []);
+
+  async function getBikeDataValue() {
+    setIsLoading(true);
+    await dispatch(Actions.GetBikesData(filterModel, filterColor, filterLocation, filterRating));
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    if (bikeData) {
       setFilter(bikeData);
+    } else {
+      setFilter([]);
+    }
+  }, [bikeData])
+
+
+
+  const handleBikeFilter = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+
+    // if (filterModel === '' && filterColor === '' && filterLocation === '' && filterRating === '') {
+    //   return
+    // }
+
+    try {
+      setIsLoading(true)
+      let response = await dispatch(Actions.GetBikesData(filterModel, filterColor, filterLocation, filterRating));
+      getBikeDataValue();
+      setIsLoading(false)
+      if (response) throw response;
+
+      setIsLoadingData(false);
+    } catch (error) {
+
+      if (typeof error === 'string') {
+        setError(error);
+      } else {
+        setError('Something went wrong, please try again later');
+      }
+
     }
 
-    const filteredBikeData = bikeData.filter((data: any) => {
-      const matchModel = filterModel ? data.bikeModel.toLowerCase().includes(filterModel.toLowerCase()) : true;
-      const matchColor = filterColor ? data.bikeColor.toLowerCase().includes(filterColor.toLowerCase()) : true;
-      const matchLocation = filterLocation ? data.location.toLowerCase().includes(filterLocation.toLowerCase()) : true;
-      const matchRating = filterRating ? data.averageRating === parseInt(filterRating) : true;
-      return matchModel && matchColor && matchLocation && matchRating;
-    });
-
-    setFilter(filteredBikeData);
   };
 
   //ADD AND UPDATE API DATA
 
-  const handleAddUpdateBike = async (e: any) => {
+  const handleAddUpdateBike = async (e: React.FormEvent) => {
+
+
     e.preventDefault();
     setIsLoadingData(false);
 
@@ -232,7 +245,7 @@ const Manager = () => {
     }
   };
 
-  const handleDeleteBike = async (id: any) => {
+  const handleDeleteBike = async (id: string | undefined) => {
     setIsLoading(false);
     try {
       setIsLoading(true);
@@ -350,7 +363,9 @@ const Manager = () => {
               </div>
               <br />
 
-              <button className="bg-[blue] text-[white] py-3 px-8 text-xl ">Filter</button>
+              {
+                IsLoading ? (<CircularProgress />) : (<button className="bg-[blue] text-[white] py-3 px-8 text-xl ">Filter</button>)
+              }
             </form>
           </div>
         </div>
@@ -359,7 +374,7 @@ const Manager = () => {
           <TableComp
             data={Filter}
             rowsToShow={8}
-            isLoading={IsLoadingData}
+            isLoading={IsLoading}
             columns={[
               {
                 Heading: 'Model',

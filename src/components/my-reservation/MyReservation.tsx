@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getUserData } from '../../Helpers/GetUserData';
 import { Delete } from '@mui/icons-material';
-import { Box, IconButton, Rating } from '@mui/material';
+import { Box, CircularProgress, IconButton, Rating } from '@mui/material';
 import { useEnhancedDispatch, useEnhancedSelector } from '../../Helpers/reduxHooks';
 import * as Actions from '../../store/actions';
 import { toast } from 'react-toastify';
@@ -20,7 +20,6 @@ const MyReservation = () => {
   const [Error, setError] = useState('');
 
   useEffect(() => {
-    getUserBikeDataValue();
     getUserReservedeData();
   }, []);
 
@@ -36,13 +35,7 @@ const MyReservation = () => {
     setIsLoading(false);
   }
 
-  async function getUserBikeDataValue(load = true) {
-    if (load) {
-      setIsLoading(true);
-    }
-    await dispatch(Actions.GetUserBikesData());
-    setIsLoading(false);
-  }
+ 
 
 
 
@@ -68,7 +61,7 @@ const MyReservation = () => {
       toast.success('Bike Delete Successfully');
 
       //call get user function inside this
-    } catch (error: any) {
+    } catch (error) {
       setIsLoading(false);
       if (typeof error === 'string') {
       } else {
@@ -79,9 +72,8 @@ const MyReservation = () => {
 
 
 
-  const handleRating = async (id: any, newRating: number | null) => {
+  const handleRating = async (id: string, newRating: number | null) => {
 
-    setIsLoading(false);
     try {
       setIsLoading(true);
       const response = await dispatch(Actions.AddRatingValue(id, newRating, access_token));
@@ -107,7 +99,6 @@ const MyReservation = () => {
   }
 
 
-
   return (
     <>
       <div>
@@ -126,7 +117,7 @@ const MyReservation = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {userData?.previousReservations?.map((reservation: any, index: any) => {
+              {userData?.previousReservations?.map((reservation:any) => {
                 const startDate = new Date(reservation.startDate);
                 const endDate = new Date(reservation.endDate);
                 const isInRange =
@@ -151,17 +142,22 @@ const MyReservation = () => {
                       ) : (
 
 
-                        <Rating
-                          name={`user-rating-${reservation.id}`}
-                          value={ratings[reservation.id] || 0}
-                          onChange={(event, newValue) => {
+                        IsLoading ? (
+                          <CircularProgress />
+                        ) :
+                          (
+                            <Rating
+                              name={`user-rating-${reservation.id}`}
+                              value={ratings[reservation.id] || 0}
+                              onChange={(event, newValue) => {
 
-                            setRatings((prevRatings) => ({
-                              ...prevRatings,
-                            }));
-                            handleRating(reservation.id, newValue);
-                          }}
-                        />
+                                setRatings((prevRatings) => ({
+                                  ...prevRatings,
+                                }));
+                                handleRating(reservation.id, newValue);
+                              }}
+                            />
+                          )
 
 
 

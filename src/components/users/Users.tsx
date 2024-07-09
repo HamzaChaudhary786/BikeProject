@@ -66,29 +66,64 @@ const Users = () => {
 
 
 
-  const filterUser = (e: any) => {
+
+
+  useEffect(() => {
+    getUserData();
+  }, []);
+
+  async function getUserData() {
+    setIsLoading(true);
+    await dispatch(Actions.GetUserData(name, email, types));
+    setIsLoading(false);
+  }
+
+  useEffect(() => {
+    if (allUserData) {
+      setFilter(allUserData);
+    } else {
+      setFilter([]);
+    }
+  }, [allUserData])
+
+
+
+  const filterUser = async (e: React.FormEvent) => {
 
     e.preventDefault();
 
-    if (name === '' || email === '' || types === '') {
-      setFilter(allUserData);
+    // if (name === '' || email === '' || types === '') {
+    //   setFilter(allUserData);
+    // }
+
+
+    try {
+      setIsLoading(true)
+      let response = await dispatch(Actions.GetUserData(name, email, types));
+      getUserData();
+      setIsLoading(false)
+      if (response) throw response;
+
+      setIsLoadingData(false);
+    } catch (error) {
+
+      if (typeof error === 'string') {
+        setError(error);
+      } else {
+        setError('Something went wrong, please try again later');
+      }
+
     }
 
-    const filteredData = allUserData.filter((data: any) => {
-      const matchName = name ? data.userName.toLowerCase().includes(name.toLowerCase()) : true;
-      const matchEmail = email ? data.email.toLowerCase().includes(email.toLowerCase()) : true;
-      const matchType = types ? data.type.toLowerCase().includes(types.toLowerCase()) : true;
 
-      return matchName && matchEmail && matchType;
-    });
-
-    setFilter(filteredData);
   };
 
   const handleViewDialog = (id: string | undefined) => {
     setViewDialogOpen(true);
 
     const viewData = Filter?.filter((view: any) => view.id === id);
+
+    console.log(viewData, "view data is")
 
 
     if (viewData.length > 0) {
@@ -114,12 +149,12 @@ const Users = () => {
   const handleConfirmation = (id: string | undefined) => {
     setShowPopupIndex(null);
     if (id) {
-      handleStatus(id);
+      handleStatus(parseInt(id));
     }
   };
 
 
-  const handleStatus = async (id: any) => {
+  const handleStatus = async (id: number) => {
     const singleTypeData = Filter?.find((data: UserDataTypes) => data.id === id);
 
     if (singleTypeData) {
@@ -137,7 +172,7 @@ const Users = () => {
             singleTypeData.email,
             newType,
             access_token,
-            id
+            id.toString()
           ));
 
           getUserDataValue();
@@ -153,7 +188,7 @@ const Users = () => {
           setPassword('');
           setId('');
         }
-      } catch (error: any) {
+      } catch (error) {
         setIsLoading(false);
         if (typeof error === 'string') {
           setError(error);
@@ -180,7 +215,7 @@ const Users = () => {
     if (load) {
       setIsLoading(true);
     }
-    await dispatch(Actions.GetUserData());
+    await dispatch(Actions.GetUserData(name, email, types));
     setIsLoading(false);
   }
 
@@ -199,18 +234,10 @@ const Users = () => {
   useEffect(() => {
     const singleData = Filter.find((itm: any) => itm.id === editId);
 
-
-
-
     if (singleData) {
       setUserName(singleData.userName);
       setUserEmail(singleData.email);
       setUserType(singleData.type);
-
-
-
-
-
 
     }
   }, [editId, Filter]);
@@ -352,7 +379,7 @@ const Users = () => {
           <TableComp
 
             data={Filter}
-            isLoading={IsLoadingData}
+            isLoading={IsLoading}
             columns={[
 
               {
@@ -447,7 +474,7 @@ const Users = () => {
           >
             <Box sx={style}>
               <div>
-                <form action="" onSubmit={filterUser} className="space-y-4">
+                <form action="" onSubmit={handleAddUpdateUser} className="space-y-4">
                   {editId ? <h1>Edit User</h1> : <h1>Add User</h1>}
                   <br />
 
@@ -501,12 +528,12 @@ const Users = () => {
                       <CircularProgress />
                     ) : editId ? (
                       <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
-                        onClick={handleAddUpdateUser}>
+                      >
                         Edit User
                       </button>
                     ) : (
                       <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
-                        onClick={handleAddUpdateUser}>
+                      >
                         Add User
                       </button>
                     )}
@@ -548,7 +575,7 @@ const Users = () => {
                       <tbody>
 
                         {
-                          itm.reservation?.length === 0 ? (
+                          itm.reservations?.length === 0 ? (
                             <div>
                               No Reservation
                             </div>

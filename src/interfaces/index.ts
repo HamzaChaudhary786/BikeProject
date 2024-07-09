@@ -1,3 +1,5 @@
+import { UserTypes } from "../Helpers/entities";
+
 export interface GenericData<T> {
   data: T;
 }
@@ -13,7 +15,7 @@ export interface UserStore {
   bikeData: any;
   allUserData: any;
   getBikesData: any;
-  previousReservations: PreviousReservation[]
+  UserData: PreviousReservation[]
 }
 
 export interface PreviousReservation {
@@ -87,10 +89,12 @@ export interface FormValues {
 }
 
 export interface UserData {
-  userName: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
+  userName: string;
   map: any;
-  type: SetStateAction<{}>;
+  type: UserTypes;
   id: string;
+  previousReservations : any;
+
 }
 
 export interface AuthSuccessResponse {

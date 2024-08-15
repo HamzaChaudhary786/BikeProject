@@ -1,3 +1,5 @@
+import { SetStateAction } from 'react';
+
 export interface GenericData<T> {
   data: T;
 }
@@ -13,7 +15,7 @@ export interface UserStore {
   bikeData: any;
   allUserData: any;
   getBikesData: any;
-  previousReservations: PreviousReservation[]
+  previousReservations: PreviousReservation[];
 }
 
 export interface PreviousReservation {
@@ -24,9 +26,9 @@ export interface PreviousReservation {
   endDate: string;
   createdAt: string;
   updatedAt: string;
-  bikeModel: string; 
-  bikeColor: string; 
-  location: string;  
+  bikeModel: string;
+  bikeColor: string;
+  location: string;
 }
 
 export interface Reservation {
@@ -54,7 +56,7 @@ export interface Reservation {
   location: string;
   color: string;
   startDate: string; // ISO date string
-  endDate: string;   // ISO date string
+  endDate: string; // ISO date string
 }
 
 // Define the structure for the user data
@@ -66,7 +68,6 @@ export interface UserDataTypes {
   type: any; // You can restrict this to specific types if needed
   reservation: Reservation[]; // An array of reservations
 }
-
 
 export interface Bike {
   id?: string;
@@ -87,17 +88,17 @@ export interface FormValues {
 }
 
 export interface UserData {
-  userName: ReactI18NextChildren | Iterable<ReactI18NextChildren>;
+  userName: any;
   map: any;
   type: SetStateAction<{}>;
   id: string;
+  previousReservations: any;
 }
 
 export interface AuthSuccessResponse {
   accessToken: string;
   refreshToken: string;
 }
-
 
 export interface GetUserDataResponse {
   data: UserData;

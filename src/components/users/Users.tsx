@@ -31,7 +31,6 @@ const style = {
 };
 
 const Users = () => {
-
   const dispatch = useEnhancedDispatch();
   const access_token = useEnhancedSelector((state) => state.user.accessToken);
   const allUserData = useEnhancedSelector((state) => state.user.allUserData);
@@ -57,17 +56,13 @@ const Users = () => {
   const [userType, setUserType] = useState<UserTypes>(UserTypes.Manager);
   const [password, setPassword] = useState('');
 
-
   ////////////////////
 
   const [IsLoading, setIsLoading] = useState(false);
 
   const [Error, setError] = useState('');
 
-
-
   const filterUser = (e: any) => {
-
     e.preventDefault();
 
     if (name === '' || email === '' || types === '') {
@@ -90,18 +85,12 @@ const Users = () => {
 
     const viewData = Filter?.filter((view: any) => view.id === id);
 
-
     if (viewData.length > 0) {
       setFilter(viewData);
     }
-
   };
 
   const [showPopupIndex, setShowPopupIndex] = useState<number | null>(null);
-
-
-
-
 
   const handleMouseEnter = (index: number) => {
     setShowPopupIndex(index);
@@ -118,7 +107,6 @@ const Users = () => {
     }
   };
 
-
   const handleStatus = async (id: any) => {
     const singleTypeData = Filter?.find((data: UserDataTypes) => data.id === id);
 
@@ -132,13 +120,9 @@ const Users = () => {
           setIsLoading(true);
 
           // Ensure correct syntax for dispatch
-          let response = await dispatch(Actions.UpdateUserData(
-            singleTypeData.userName,
-            singleTypeData.email,
-            newType,
-            access_token,
-            id
-          ));
+          let response = await dispatch(
+            Actions.UpdateUserData(singleTypeData.userName, singleTypeData.email, newType, access_token, id),
+          );
 
           getUserDataValue();
 
@@ -167,9 +151,6 @@ const Users = () => {
     }
   };
 
-
-
-
   const [Filter, setFilter] = useState<UserDataTypes[]>([]);
 
   useEffect(() => {
@@ -185,7 +166,7 @@ const Users = () => {
   }
 
   useEffect(() => {
-    console.log(allUserData, "userdatas is");
+    console.log(allUserData, 'userdatas is');
     if (allUserData) {
       setFilter(allUserData);
     } else {
@@ -193,32 +174,17 @@ const Users = () => {
     }
   }, [allUserData]);
 
-
-
-
   useEffect(() => {
     const singleData = Filter.find((itm: any) => itm.id === editId);
-
-
-
 
     if (singleData) {
       setUserName(singleData.userName);
       setUserEmail(singleData.email);
       setUserType(singleData.type);
-
-
-
-
-
-
     }
   }, [editId, Filter]);
 
-
-
   const handleAddUpdateUser = async (e: any) => {
-
     e.preventDefault();
     setIsLoading(false);
 
@@ -242,7 +208,7 @@ const Users = () => {
       }
 
       if (response) throw response;
-      setDialogOpen(false)
+      setDialogOpen(false);
       setIsLoading(false);
       toast.success('Bike Create Successfully');
       setError('');
@@ -261,12 +227,9 @@ const Users = () => {
         setError('Something went wrong, please try again later');
       }
     }
-
-  }
-
+  };
 
   const handleDeleteUser = async (id: any) => {
-
     setIsLoading(false);
     try {
       setIsLoading(true);
@@ -285,18 +248,14 @@ const Users = () => {
         setError('Something went wrong, please try again later');
       }
     }
-  }
-
-
-
+  };
 
   return (
     <>
       <div className="space-y-10 p-10">
-        <div>Heloo Users</div>
-
         <button
-          className="bg-[blue] text-[white] rounded-2xl py-3 px-4"
+          className="bg-[blue] text-[white] rounded-2xl py-3 px-4 cursor-pointer "
+          style={{ border: '2px solid white' }}
           onClick={() => {
             setDialogOpen(true);
             setEditId('');
@@ -311,7 +270,7 @@ const Users = () => {
               <h1>Filter User</h1>
               <br />
 
-              <div className="flex gap-5">
+              <div className="flex flex-col lg:flex-row gap-5">
                 <TextField
                   type="text"
                   label="Name"
@@ -342,7 +301,11 @@ const Users = () => {
                 <br />
               </div>
 
-              <button type="submit" className="py-2 px-3 bg-[blue] text-[white]">
+              <button
+                type="submit"
+                className="py-3 px-12 bg-[blue] cursor-pointer rounded-2xl text-[white] mt-16"
+                style={{ border: '2px solid white' }}
+              >
                 Filter
               </button>
             </form>
@@ -350,11 +313,9 @@ const Users = () => {
         </div>
         <div>
           <TableComp
-
             data={Filter}
             isLoading={IsLoadingData}
             columns={[
-
               {
                 Heading: 'Name',
                 accessor: 'userName',
@@ -413,10 +374,12 @@ const Users = () => {
                       >
                         <EditIcon color="secondary" />
                       </IconButton>
-                      <IconButton className="mt-4 mr-5"
+                      <IconButton
+                        className="mt-4 mr-5"
                         onClick={() => {
                           handleDeleteUser(row.id);
-                        }}>
+                        }}
+                      >
                         <Delete color="primary" />
                       </IconButton>
 
@@ -435,8 +398,6 @@ const Users = () => {
             ]}
           />
         </div>
-
-
 
         <div>
           <Modal
@@ -463,7 +424,6 @@ const Users = () => {
                     <br />
                     <TextField
                       type="email"
-
                       label="Email"
                       value={userEmail}
                       onChange={(e) => setUserEmail(e.target.value)}
@@ -471,49 +431,33 @@ const Users = () => {
                     />
                     <br />
 
-
-                    <OptionValue
-                      label="Type*"
-                      value={userType}
-                      onChange={setUserType}
-                      menuItems={UserTypeData}
-                    />
+                    <OptionValue label="Type*" value={userType} onChange={setUserType} menuItems={UserTypeData} />
                     <br />
 
-                    {
-                      !editId && (
-                        <TextField
-                          type="password"
-                          id="EndDate"
-                          label="Password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          variant="outlined"
-                        />
-                      )
-                    }
+                    {!editId && (
+                      <TextField
+                        type="password"
+                        id="EndDate"
+                        label="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        variant="outlined"
+                      />
+                    )}
                   </div>
 
                   <div>
-
-
                     {IsLoading ? (
                       <CircularProgress />
                     ) : editId ? (
-                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
-                        onClick={handleAddUpdateUser}>
+                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]" onClick={handleAddUpdateUser}>
                         Edit User
                       </button>
                     ) : (
-                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]"
-                        onClick={handleAddUpdateUser}>
+                      <button type="submit" className="py-2 px-3 bg-[blue] text-[white]" onClick={handleAddUpdateUser}>
                         Add User
                       </button>
                     )}
-
-
-
-
                   </div>
                 </form>
               </div>
@@ -522,11 +466,13 @@ const Users = () => {
         </div>
 
         <div>
-          <Modal open={viewDialogOpen} onClose={() => {
-            setFilter(allUserData)
-            setViewDialogOpen(false)
-
-          }}>
+          <Modal
+            open={viewDialogOpen}
+            onClose={() => {
+              setFilter(allUserData);
+              setViewDialogOpen(false);
+            }}
+          >
             <Box sx={style}>
               {Filter.map((itm: any) => (
                 <div key={itm.id} className="space-y-4">
@@ -546,29 +492,29 @@ const Users = () => {
                         </tr>
                       </thead>
                       <tbody>
-
-                        {
-                          itm.reservation?.length === 0 ? (
-                            <div>
-                              No Reservation
-                            </div>
-                          ) : (
-                            itm.reservations?.map((item: any, index: any) => (
-                              <tr key={index}>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.model}</td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.color}</td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {new Date(item.startDate).toLocaleString()}
-                                </td>
-                                <td style={{ border: '1px solid #ddd', padding: '8px' }}>
-                                  {new Date(item.endDate).toLocaleString()}
-                                </td>
-                              </tr>
-                            )) || <tr><td colSpan={5} style={{ textAlign: 'center', border: '1px solid #ddd', padding: '8px' }}>No Reservation</td></tr>
+                        {itm.reservation?.length === 0 ? (
+                          <div>No Reservation</div>
+                        ) : (
+                          itm.reservations?.map((item: any, index: any) => (
+                            <tr key={index}>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.model}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.location}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>{item.color}</td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                {new Date(item.startDate).toLocaleString()}
+                              </td>
+                              <td style={{ border: '1px solid #ddd', padding: '8px' }}>
+                                {new Date(item.endDate).toLocaleString()}
+                              </td>
+                            </tr>
+                          )) || (
+                            <tr>
+                              <td colSpan={5} style={{ textAlign: 'center', border: '1px solid #ddd', padding: '8px' }}>
+                                No Reservation
+                              </td>
+                            </tr>
                           )
-                        }
-
+                        )}
                       </tbody>
                     </table>
                   </ul>

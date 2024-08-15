@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import HelpIcon from '@mui/icons-material/Help';
 import React, { useState } from 'react';
+import { ASSETS } from '../../constants';
 
 interface Columns {
   Heading: string;
@@ -132,7 +133,7 @@ export const TableComp: React.FC<TableProps> = ({ columns, data, isLoading, rows
           onClick={() => {
             setPage(Page - 1);
           }}
-          startIcon={<p>Add icon here</p>}
+          startIcon={<img src={ASSETS.left} className="w-5 h-5" />}
           variant="outlined"
           color="secondary"
           style={{
@@ -159,7 +160,7 @@ export const TableComp: React.FC<TableProps> = ({ columns, data, isLoading, rows
           onClick={() => {
             setPage(Page + 1);
           }}
-          endIcon={<p>Add icon here</p>}
+          endIcon={<img src={ASSETS.right} className="w-5 h-5" />}
           variant="outlined"
           color="secondary"
           style={{

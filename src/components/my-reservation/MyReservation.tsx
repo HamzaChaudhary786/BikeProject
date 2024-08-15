@@ -9,11 +9,9 @@ import * as Actions from '../../store/actions';
 import { toast } from 'react-toastify';
 
 const MyReservation = () => {
-
-
   const dispatch = useEnhancedDispatch();
   const access_token = useEnhancedSelector((state) => state.user.accessToken);
-  const userData = useEnhancedSelector((state) => state.user.userData)
+  const userData = useEnhancedSelector((state) => state.user.userData);
   const currentDate = new Date();
   // const UserData [] =userData
 
@@ -23,9 +21,6 @@ const MyReservation = () => {
     getUserBikeDataValue();
     getUserReservedeData();
   }, []);
-
-
-
 
   async function getUserReservedeData(load = true) {
     if (load) {
@@ -44,17 +39,11 @@ const MyReservation = () => {
     setIsLoading(false);
   }
 
-
-
-
   const [IsLoading, setIsLoading] = useState(false);
-
 
   const [ratings, setRatings] = useState<{ [key: string]: number }>({});
 
-
-
-  console.log("rating Value", ratings)
+  console.log('rating Value', ratings);
 
   const handleDeleteReservedBike = async (id: any) => {
     setIsLoading(false);
@@ -77,10 +66,7 @@ const MyReservation = () => {
     }
   };
 
-
-
   const handleRating = async (id: any, newRating: number | null) => {
-
     setIsLoading(false);
     try {
       setIsLoading(true);
@@ -101,31 +87,26 @@ const MyReservation = () => {
         setError('Something went wrong, please try again later');
       }
     }
-
-
-
-  }
-
-
+  };
 
   return (
     <>
       <div>
-        <h1>MyReservation</h1>
+        <h1 className=" text-2xl font-bold my-12">MyReservation</h1>
 
         <div>
-          <table className="min-w-full divide-y divide-gray-200 border border-gray-200">
-            <thead className="bg-gray-50">
+          <table className="reservation-table">
+            <thead>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Bike Model</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Bike Color</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Bike Location</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Start Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">End Date</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-200">Action</th>
+                <th>Bike Model</th>
+                <th>Bike Color</th>
+                <th>Bike Location</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Action</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {userData?.previousReservations?.map((reservation: any, index: any) => {
                 const startDate = new Date(reservation.startDate);
                 const endDate = new Date(reservation.endDate);
@@ -136,35 +117,29 @@ const MyReservation = () => {
 
                 return (
                   <tr key={reservation.id}>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reservation.bikeModel}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reservation.bikeColor}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{reservation.location}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{startDate.toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">{endDate.toLocaleDateString()}</td>
-                    <td className="px-6 py-4 whitespace-nowrap border border-gray-200">
+                    <td>{reservation.bikeModel}</td>
+                    <td>{reservation.bikeColor}</td>
+                    <td>{reservation.location}</td>
+                    <td>{startDate.toLocaleDateString()}</td>
+                    <td>{endDate.toLocaleDateString()}</td>
+                    <td>
                       {isInRange ? (
                         <IconButton onClick={() => handleDeleteReservedBike(reservation.id)}>
-                          <Delete className="text-[red]" />
+                          <Delete className="delete-icon" />
                         </IconButton>
                       ) : reservation.rating ? (
                         <div>{reservation.rating}</div>
                       ) : (
-
-
                         <Rating
                           name={`user-rating-${reservation.id}`}
                           value={ratings[reservation.id] || 0}
                           onChange={(event, newValue) => {
-
                             setRatings((prevRatings) => ({
                               ...prevRatings,
                             }));
                             handleRating(reservation.id, newValue);
                           }}
                         />
-
-
-
                       )}
                     </td>
                   </tr>
@@ -172,10 +147,6 @@ const MyReservation = () => {
               })}
             </tbody>
           </table>
-
-          <div>
-
-          </div>
         </div>
       </div>
     </>

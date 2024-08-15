@@ -1,4 +1,4 @@
-import Manager from "../components/manager/Manager";
+import Manager from '../components/manager/Manager';
 
 export const PRIMARY_COLOR = 'rgba(159, 232, 112, 1)';
 export const PRIMARY_COLOR_DARK = 'rgba(19, 45, 0, 1)';
@@ -49,16 +49,15 @@ const manual_deploy = 'v_1';
 
 export const ASSETS = {
   logo: '/images/logo.svg',
-  fav: '/fav/fav.svg',
+  fav: '/images/fav.svg',
+  right: '/images/right.svg',
+  left: '/images/left.svg',
 };
 
 export const AvailibleValue = [
-  { value: "true", label: 'Availible' },
-  { value: "false", label: 'Not Availible' },
+  { value: 'true', label: 'Availible' },
+  { value: 'false', label: 'Not Availible' },
 ];
-
-
-
 
 export const UserTypeData = [
   { value: 'Manager', label: 'Manager' },

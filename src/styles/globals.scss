@@ -33,6 +33,7 @@ h4,
 input {
   font-family: $FONT_SECONDARY;
 }
+
 h5,
 p,
 button,
@@ -73,6 +74,7 @@ ol {
     display: none;
   }
 }
+
 ::-webkit-scrollbar {
   width: 3px;
   height: 3px;
@@ -93,6 +95,7 @@ ol {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--primary-color);
 }
+
 ::-webkit-scrollbar-button {
   height: 0.5px;
   background: var(--primary-color);
@@ -103,6 +106,7 @@ tr.roundedRow {
     border-radius: 10px;
     background-color: $HOVER_GREYISH;
   }
+
   &:last-child {
     border-radius: 10px;
     background-color: $HOVER_GREYISH;
@@ -113,7 +117,78 @@ tr.roundedRow {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
+}
+
+.reservation-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.reservation-table th,
+.reservation-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.reservation-table th {
+  background-color: #f2f2f2;
+  color: #333;
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.reservation-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.reservation-table tr:hover {
+  background-color: #ddd;
+}
+
+.delete-icon {
+  color: red;
+}
+
+.reservation-table {
+  width: 100%;
+  border-collapse: collapse;
+  /* Ensures borders are not doubled */
+}
+
+.reservation-table th,
+.reservation-table td {
+  border: 1px solid #ddd;
+  /* Light gray border for cells */
+  padding: 8px;
+  /* Padding inside cells */
+  text-align: left;
+  /* Align text to the left */
+}
+
+.reservation-table thead {
+  background-color: #f2f2f2;
+  /* Light background for header */
+}
+
+.reservation-table th {
+  font-weight: bold;
+  /* Bold text for header */
+  text-transform: uppercase;
+  /* Uppercase text for header */
+}
+
+.reservation-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+  /* Alternate row color */
+}
+
+.reservation-table tr:hover {
+  background-color: #ddd;
+  /* Highlight row on hover */
 }

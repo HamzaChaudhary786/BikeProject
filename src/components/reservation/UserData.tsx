@@ -24,16 +24,12 @@ const style = {
 };
 
 const UserData = () => {
-
   const dispatch = useEnhancedDispatch();
   const currentDate = new Date();
 
-  const getBikesData = useEnhancedSelector((state) => state.user.getBikesData)
-  const userData = useEnhancedSelector((state) => state.user.userData)
+  const getBikesData = useEnhancedSelector((state) => state.user.getBikesData);
+  const userData = useEnhancedSelector((state) => state.user.userData);
   const access_token = useEnhancedSelector((state) => state.user.accessToken);
-
-
-
 
   const todayDate = currentDate.toISOString().slice(0, 16);
 
@@ -48,16 +44,14 @@ const UserData = () => {
   const [rating, setRating] = useState('');
   const [openBox, setOpenBox] = useState(false);
   const [Id, setId] = useState('');
-  const [UserData, setUserData] = useState({})
+  const [UserData, setUserData] = useState({});
   // const [reserveStartDate, setReserveStartDate] = useState(currentDate);
   // const [reserveEndDate, setReserveEndDate] = useState('');
   // Filtered bike data
   const [filteredData, setFilteredData] = useState(getBikesData);
   const [IsLoading, setIsLoading] = useState(false);
 
-
   const [Error, setError] = useState('');
-
 
   useEffect(() => {
     getUserBikeDataValue();
@@ -74,54 +68,30 @@ const UserData = () => {
   useEffect(() => {
     console.log(getBikesData);
     if (getBikesData || userData) {
-      setFilteredData(getBikesData)
-      setUserData(userData?.id)
+      setFilteredData(getBikesData);
+      setUserData({ id: userData?.id || '' });
     } else {
       setFilteredData([]);
     }
   }, [setFilteredData, getBikesData]);
 
-
   const handleFilter = (e: any) => {
     e.preventDefault();
 
-
-
+    // Reset to show all data if all filters are cleared
+    if (!model && !color && !location && !rating) {
+      setFilteredData(getBikesData);
+      return;
+    }
 
     // Filter logic
-    const filtered = filteredData.filter((item: any) => {
-      // Convert input date values to Date objects for comparison
-      const startDateValue = startDate ? new Date(startDate) : null;
-      console.log('startDateValue', startDateValue);
-      const endDateValue = endDate ? new Date(endDate) : null;
-
+    const filtered = getBikesData.filter((item: any) => {
       // Check each criteria
-      const matchesModel = model ? item.bikeModel.includes(model) : true;
-      const matchesColor = color ? item.bikeColor.includes(color) : true;
-      const matchesLocation = location ? item.location.includes(location) : true;
+      const matchesModel = model ? item.bikeModel.toLowerCase().includes(model.toLowerCase()) : true;
+      const matchesColor = color ? item.bikeColor.toLowerCase().includes(color.toLowerCase()) : true;
+      const matchesLocation = location ? item.location.toLowerCase().includes(location.toLowerCase()) : true;
       const matchesRating = rating ? item.averageRating === parseInt(rating) : true;
 
-      // Check date range availability
-      // const matchesDate = item.reservationSchedule.every((schedule) => {
-      //   const reservedFromDate = new Date(schedule.reservedFromDate);
-      //   const reservedToDate = new Date(schedule.reservedToDate);
-
-      //   // Check if the date range in the form does NOT intersect with the available schedule
-      //   const isStartOutside = startDateValue
-      //     ? startDateValue < reservedFromDate || startDateValue > reservedToDate
-      //     : true;
-
-      //   console.log(isStartOutside, 'isStartout data');
-      //   const isEndOutside = endDateValue ? endDateValue < reservedFromDate || endDateValue > reservedToDate : true;
-
-      //   const isStartValid = endDateValue ? endDateValue >= new Date() : true;
-      //   const isEndValid = endDateValue ? endDateValue >= new Date() : true;
-
-      //   // We want the provided range to be completely outside any reserved ranges
-      //   return isStartOutside && isEndOutside && isStartValid && isEndValid;
-      // });
-
-      // Return true if all criteria match
       return matchesModel && matchesColor && matchesLocation && matchesRating;
     });
 
@@ -129,14 +99,9 @@ const UserData = () => {
     setFilteredData(filtered);
   };
 
-
-
   const handleReserved = async (e: any) => {
-
     e.preventDefault();
     setIsLoading(false);
-
-
 
     try {
       setIsLoading(true);
@@ -145,7 +110,6 @@ const UserData = () => {
 
       setIsLoading(true);
       response = await dispatch(Actions.ReservedBikeData(Id, startDate, endDate, access_token));
-
 
       if (response) throw response;
 
@@ -166,39 +130,43 @@ const UserData = () => {
         setError('Something went wrong, please try again later');
       }
     }
-
-  }
+  };
 
   return (
     <>
-      <div className="flex justify-between p-10 ">
+      <div className="flex justify-around py-16 ">
         <div className="filer grid justify-items-center  sticky top-10 scroll-smooth duration-700 h-full">
           <form onSubmit={handleFilter} className='w-80 h-fit p-6 bg-[white] border-["2px border-solid red"]'>
             <h2>Filter</h2>
             <div className="  space-y-3 p-4">
-              <label htmlFor="StartDate">Start Date</label>
+              <div>
+                <TextField
+                  type="datetime-local"
+                  id="StartDate"
+                  label="Start Date"
+                  fullWidth
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  variant="standard"
+                />
+              </div>
               <br />
-              <TextField
-                type="datetime-local"
-                id="StartDate"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                variant="standard"
-              />
-              <br />
-              <label htmlFor="EndDate">End Date</label>
-              <br />
-              <TextField
-                type="datetime-local"
-                id="EndDate"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                variant="standard"
-              />
+              <div>
+                <TextField
+                  type="datetime-local"
+                  id="EndDate"
+                  label="End Date"
+                  fullWidth
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  variant="standard"
+                />
+              </div>
               <br />
               <TextField
                 type="text"
                 id="Model"
+                fullWidth
                 label="Model"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
@@ -208,6 +176,7 @@ const UserData = () => {
               <TextField
                 type="text"
                 id="Color"
+                fullWidth
                 label="Color"
                 value={color}
                 onChange={(e) => setColor(e.target.value)}
@@ -217,6 +186,7 @@ const UserData = () => {
               <TextField
                 type="text"
                 id="Location"
+                fullWidth
                 label="Location"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
@@ -226,15 +196,20 @@ const UserData = () => {
               <TextField
                 type="number"
                 id="Rating"
+                fullWidth
                 label="Rating"
                 value={rating}
                 onChange={(e) => setRating(e.target.value)}
                 variant="outlined"
               />
 
-              <button type="submit" className="p-3 w-full bg-[#a1a2] text-[#ffff]">
-                Filter
-              </button>
+              {IsLoading ? (
+                <CircularProgress />
+              ) : (
+                <button type="submit" className="p-3 w-full cursor-pointer">
+                  Filter
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -251,7 +226,7 @@ const UserData = () => {
                 <Box sx={style}>
                   <div>
                     <form action="" onSubmit={handleReserved} className="space-y-6 p-6">
-                      <h1>Reserved Bike {Id}</h1>
+                      <h1 className=" text-2xl font-semibold ">Reserved Bike</h1>
                       <br />
                       <label htmlFor="StartDate">Reserve Start Date</label>
                       <br />
@@ -279,15 +254,13 @@ const UserData = () => {
                       />
                       <br />
 
-                      {
-                        IsLoading ?(
-                          <CircularProgress />
-                        ):(
-                      <button type='submit' className="bg-[blue] px-4 py-2 text-[white]">Reserved</button>
-
-                      )
-                      }
-
+                      {IsLoading ? (
+                        <CircularProgress />
+                      ) : (
+                        <button type="submit" className="bg-[blue] px-4 py-2 text-[white]">
+                          Reserved
+                        </button>
+                      )}
                     </form>
                   </div>
                 </Box>
@@ -295,38 +268,52 @@ const UserData = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 gap-6">
-            {filteredData?.length === 0 ? (
-              <p className="text-2xl text-[red] text-center">No bikes available matching the filter criteria.</p>
+          <div>
+            {IsLoading ? (
+              <div className="">
+                <CircularProgress />
+              </div>
             ) : (
-              filteredData?.map((item: any) => (
-                <section key={item.id} className="space-y-2 p-4" style={{ border: '2px solid red' }}>
-                  <h1>{item.bikeModel}</h1>
-                  <p>{item.location}</p>
-                  <p>{item.bikeColor}</p>
-
-                  <Rating
-                    name="read-only"
-                    value={item.averageRating}
-                    readOnly
-                    precision={1}
-                    emptyIcon={<StarBorderIcon style={{ color: '#d3d3d3' }} />}
-                    icon={<StarIcon style={{ color: '#ffd700' }} />}
-                  />
-
-                  <div>
-                    <button
-                      className="px-4 py-3 bg-[blue] text-[white]"
-                      onClick={() => {
-                        setOpenBox(true);
-                        setId(item.id);
-                      }}
+              <div className="grid grid-cols-2 xl:grid-cols-3 gap-6 w-full">
+                {filteredData?.length === 0 ? (
+                  <p className="text-2xl text-[red] text-center w-fit">
+                    No bikes available matching the filter criteria.
+                  </p>
+                ) : (
+                  filteredData?.map((item: any) => (
+                    <section
+                      key={item.id}
+                      className="space-y-2 p-6 bg-gray-800 text-white rounded-lg shadow-lg transform transition-transform hover:scale-105 duration-500 ease-in-out"
+                      style={{ border: '2px solid #1e40af', boxShadow: '0 4px 10px rgba(30, 64, 175, 0.5)' }}
                     >
-                      Reserved
-                    </button>
-                  </div>
-                </section>
-              ))
+                      <h1 className="text-xl font-bold">{item.bikeModel}</h1>
+                      <p className="text-md">{item.location}</p>
+                      <p className="text-md">{item.bikeColor}</p>
+
+                      <Rating
+                        name="read-only"
+                        value={item.averageRating}
+                        readOnly
+                        precision={1}
+                        emptyIcon={<StarBorderIcon style={{ color: '#d3d3d3' }} />}
+                        icon={<StarIcon style={{ color: '#ffd700' }} />}
+                      />
+
+                      <div>
+                        <button
+                          className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors cursor-pointer"
+                          onClick={() => {
+                            setOpenBox(true);
+                            setId(item.id);
+                          }}
+                        >
+                          Reserve
+                        </button>
+                      </div>
+                    </section>
+                  ))
+                )}
+              </div>
             )}
           </div>
         </div>

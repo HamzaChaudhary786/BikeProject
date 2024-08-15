@@ -35,7 +35,7 @@ const UpdatePassword = () => {
   });
 
   const email = useEnhancedSelector((state) => state.user.email);
-  const otp = useEnhancedSelector((state) => state.user.otp);
+  const otp = useEnhancedSelector((state) => state.user.otp) ?? null;
 
   const [Error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);

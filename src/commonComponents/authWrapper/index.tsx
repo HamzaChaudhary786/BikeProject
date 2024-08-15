@@ -7,7 +7,6 @@ import Navbar from '../navbar';
 import LoginPage from '../../components/login';
 import * as Actions from '../../store/actions';
 import * as ReducerActions from '../../store/reducers/';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 
 const AuthWrapper: React.FC<{ children: React.ReactNode; hideNav?: boolean; allowedRoles?: string[] }> = (props) => {
@@ -18,9 +17,6 @@ const AuthWrapper: React.FC<{ children: React.ReactNode; hideNav?: boolean; allo
   const userData = useEnhancedSelector((state) => state.user.userData);
   // const userRole = useEnhancedSelector((state) => state.user.role); // assuming `role` is part of user data in the Redux store
   // const userRole = 'user';
-
-
-
 
   useEffect(() => {
     const accessToken = localStorage.getItem('@access-token');
@@ -48,10 +44,10 @@ const AuthWrapper: React.FC<{ children: React.ReactNode; hideNav?: boolean; allo
 
       if (userType === 'manager') {
         if (location === '/reservation') {
-          setIsLoading(true)
+          setIsLoading(true);
           router.push('/manager');
         } else if (location === '/my-reservation') {
-          setIsLoading(true)
+          setIsLoading(true);
           router.push('/manager');
         } else {
           setIsLoading(false);

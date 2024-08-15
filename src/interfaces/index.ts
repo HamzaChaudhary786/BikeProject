@@ -90,7 +90,7 @@ export interface FormValues {
 export interface UserData {
   userName: any;
   map: any;
-  type: SetStateAction<{}>;
+  type: any;
   id: string;
   previousReservations: any;
 }

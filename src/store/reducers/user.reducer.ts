@@ -11,6 +11,7 @@ const initialState: UserStore = {
   bikeData: null,
   allUserData: null,
   getBikesData: null,
+  previousReservations: [],
 };
 
 export const UserSlice = createSlice({
@@ -28,7 +29,7 @@ export const UserSlice = createSlice({
     setUserData(state, action) {
       state.userData = action.payload.userData;
 
-      console.log("userData", state.userData)
+      console.log('userData', state.userData);
     },
     setLogOut(state) {
       state.userData = null;
@@ -56,12 +57,20 @@ export const UserSlice = createSlice({
     setUserBikesData(state, action) {
       state.getBikesData = action.payload;
 
-      console.log("state.getBikesData", state.getBikesData)
-
-    }
+      console.log('state.getBikesData', state.getBikesData);
+    },
   },
 });
 
-export const { setUserData, setTokens, setEmail, setBikesData, setOtpValue, setLogOut, setAllUserData, setUserBikesData } = UserSlice.actions;
+export const {
+  setUserData,
+  setTokens,
+  setEmail,
+  setBikesData,
+  setOtpValue,
+  setLogOut,
+  setAllUserData,
+  setUserBikesData,
+} = UserSlice.actions;
 
 export const UserReducer = UserSlice.reducer;

@@ -7,19 +7,14 @@ const OptionValue = ({ label, value, onChange, menuItems }: any) => {
   return (
     <FormControl
       style={{
-        width: "48%",
-        marginTop: "35px",
-        marginBottom: "10px",
+        width: '48%',
+        marginTop: '35px',
+        marginBottom: '10px',
       }}
     >
       <InputLabel>{label}</InputLabel>
-      <Select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        label="Is Active"
-        style={{ width: "100%" }}
-      >
-        {menuItems.map((item) => (
+      <Select value={value} onChange={(e) => onChange(e.target.value)} label="Is Active" style={{ width: '100%' }}>
+        {menuItems.map((item: any) => (
           <MenuItem key={item.value} value={item.value}>
             {item.label}
           </MenuItem>
